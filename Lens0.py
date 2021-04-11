@@ -4,6 +4,7 @@ import time
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from mpl_toolkits.mplot3d.axes3d import Axes3D
+from matplotlib.widgets import Slider
 
 
 # 球面レンズを複数重ね、収差の変化を確認する
@@ -11,15 +12,25 @@ LX = 4
 LY = 4
 LZ = 4
 geneNum = 500
+raysDensity = 0.5  # 入射光線の密度　スライダーにしたい
 Rx = 0.5  # 楕円面の倍率
 Ry = 3  # 楕円面の倍率
 Rz = 3  # 楕円面の倍率
 
-'''
 class CalcLine:
     def __init__(self):
         pass
 
+    # 受け取ったx,y,z座標から(x,y,z)の組を作る関数
+    def makePoints(self, point0, point1, point2, shape0, shape1):
+        result = [None]*(len(point0)+len(point1)+len(point2))
+        result[::3] = point0
+        result[1::3] = point1
+        result[2::3] = point2
+        result = np.array(result)
+        result = result.reshape(shape0, shape1)
+        return result
+'''
     # 光線を傾きと切片から生成するメソッド
     def generateLine(self):
 
@@ -43,6 +54,32 @@ class PlotLens:
         Ys = Ry * np.outer(np.sin(theta), np.sin(phi))
         Zs = Rz * np.outer(np.ones(np.size(theta)), np.cos(phi))
         ax.plot_wireframe(Xs, Ys, Zs, linewidth=0.2)
+
+        # 光線の生成（入射光
+        # 始点を正方形の格子点として、終点をレンズの曲面上とする
+        yRayStart, zRayStart = np.meshgrid(
+            np.arange(-2, 3, 1), np.arange(-2, 3, 1))
+        yRayStart = yRayStart.reshape(25)*raysDensity
+        zRayStart = zRayStart.reshape(25)*raysDensity
+        xRayStart = np.array([-8]*25)
+
+        yRayEnd, zRayEnd = np.meshgrid(
+            np.arange(-2, 3, 1), np.arange(-2, 3, 1))
+        yRayEnd = yRayEnd.reshape(25)*raysDensity
+        zRayEnd = zRayEnd.reshape(25)*raysDensity
+        xRayEnd = -Rx*np.sqrt(1-(yRayEnd/Ry)**2-(zRayEnd/Rz)**2)
+
+        CL = CalcLine()  # インスタンス化
+        raysStart = CL.makePoints(xRayStart,yRayStart,zRayStart,25,3)
+        raysEnd = CL.makePoints(xRayEnd,yRayEnd,zRayEnd,25,3)
+        print(raysStart)
+
+        # 入射光のプロット
+        for i in range(len(raysStart)):
+            XX = [raysStart[i,0], raysEnd[i,0]]
+            YY = [raysStart[i,1], raysEnd[i,1]]
+            ZZ = [raysStart[i,2], raysEnd[i,2]]
+            ax.plot(XX, YY, ZZ, 'o-', color='b', ms='2', linewidth=0.5)
 
         # グラフの見た目について
         ax.set_xlim(-LX, LX)
