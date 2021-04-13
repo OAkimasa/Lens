@@ -72,12 +72,12 @@ class VectorFunctions:
         return normalV
 
     # スネルの公式から屈折光の方向ベクトルを求める関数
-    def decideRefractionVL(self, rayV, normalV, Nin, Nout):
+    def decideRefractionVL(self, rayV, normalV, Nair, Nn):
         # 正規化
         rayV = rayV/np.linalg.norm(rayV)
         normalV = normalV/np.linalg.norm(normalV)
         # 係数A
-        A = Nin/Nout
+        A = Nair/Nn
         # 入射角
         cos_t_in = -np.dot(rayV,normalV)
         #量子化誤差対策
@@ -100,12 +100,12 @@ class VectorFunctions:
         outRayV = outRayV/np.linalg.norm(outRayV)
         return outRayV
 
-    def decideRefractionVR(self, rayV, normalV, Nin, Nout):
+    def decideRefractionVR(self, rayV, normalV, Nair, Nn):
         # 正規化
         rayV = rayV/np.linalg.norm(rayV)
         normalV = normalV/np.linalg.norm(normalV)
         # 係数A
-        A = Nin/Nout
+        A = Nair/Nn
         # 入射角
         cos_t_in = np.dot(rayV,normalV)
         #量子化誤差対策
