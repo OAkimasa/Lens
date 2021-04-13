@@ -12,9 +12,9 @@ LX = 4
 LY = 4
 LZ = 4
 geneNum = 500
-raysDensity = 0.8  # 入射光線の密度　スライダーにしたい
+raysDensity = 0.5  # 入射光線の密度　スライダーにしたい
 nn = 1.6  # レンズの屈折率
-zplus = 0.5  # 入射光のz軸方向移動
+zplus = 0  # 入射光のz軸方向移動
 Rx = 0.5  # 楕円面の倍率
 Ry = 3  # 楕円面の倍率
 Rz = 3  # 楕円面の倍率
@@ -34,19 +34,26 @@ class CalcLine:
         return result
 
     # 光線と法線のなす角を計算し、なす角と回転基準ベクトルを返す
-    def calcAngle(
-        self,enterRayVector,
-        surfacePointx, surfacePointy, surfacePointz):
+    def calcAngle(self,enterRayVector,surfacePointx,surfacePointy,surfacePointz):
         # レンズの法線を計算
         normalVector = []
+        normalVectorx = []
+        normalVectory = []
+        normalVectorz = []
         base = []
         for i in range(len(surfacePointx)):
+            normalVectorx.append((2/Rx**2)*surfacePointx[i])
+            normalVectory.append((2/Ry**2)*surfacePointy[i])
+            normalVectorz.append((2/Rz**2)*surfacePointz[i])
             base.append((2/Rx**2)*surfacePointx[i])
             base.append((2/Ry**2)*surfacePointy[i])
             base.append((2/Rz**2)*surfacePointz[i])
             normalVector.append(base)
             base = []
-        normalVector = np.array(normalVector)
+        normalVectorx = np.array(normalVectorx)
+        normalVectory = np.array(normalVectory)
+        normalVectorz = np.array(normalVectorz)
+        #print(normalVector.shape)
 
         # 入射光と法線のなす角を計算
         angle = []
@@ -55,10 +62,8 @@ class CalcLine:
                 np.dot(enterRayVector[i], normalVector[i])/(
                     np.linalg.norm(enterRayVector[i], ord=2
                     )*np.linalg.norm(normalVector[i], ord=2))))
-        #print(angle)
         # 屈折の法則
         angle = np.arcsin((np.sin(angle)/nn))
-        #print(angle)
 
         # 回転基準とするベクトルを生成
         Cross = np.cross(enterRayVector, normalVector)
@@ -67,15 +72,14 @@ class CalcLine:
             Norm.append(np.linalg.norm(i, ord=2))
         rotBaseVector = []
         for i in range(len(Cross)):
-            #print(Norm[i])            Cross[i]/Norm[i]
             rotBaseVector.append(np.divide(
                 Cross[i], Norm[i], out=np.zeros_like(Cross[i]), where=Norm[i] != 0
                 ))
-        return angle, rotBaseVector
+        return angle, rotBaseVector, normalVectorx, normalVectory, normalVectorz
 
+    # 入射光の方向ベクトル、回転基準ベクトル、回転角から屈折光を計算する
     def geneRayinLens(self, enterVector, rotBaseVector, rotAngle):
         for i in range(len(enterVector)):
-            #print(*enterVector)
             enterVector[i] = np.array(enterVector[i])
             enterVector[i] = np.append(enterVector[i], 1)
         #print(*enterVector, sep='\n')
@@ -98,20 +102,13 @@ class CalcLine:
             rayinLensBase = np.dot(rot44, enterVector[i])
             rayinLens.append(rayinLensBase)
             rayinLensBase = []
-            #rayinLens = 0
         #print(rayinLens[0])
         rayinLens = np.array(rayinLens)
         #rayinLens = rayinLens*np.linalg.norm(enterVector)  # 厳密性は失われているかも
+        #rayinLens = rayinLens*10  # 厳密性は失われているかも
         #print(rayinLens[0])
         return rayinLens
 
-'''
-    # 光線を傾きと切片から生成するメソッド
-    def generateLine(self):
-
-    # レンズによる屈折角を計算するメソッド
-    def calcAngle(self):
-'''
 
 class PlotLens:
     def __init__(self):
@@ -147,7 +144,6 @@ class PlotLens:
         CL = CalcLine()  # インスタンス化
         raysStart = CL.makePoints(xRayStart,yRayStart,zRayStart,25,3)
         raysEnd = CL.makePoints(xRayEnd,yRayEnd,zRayEnd,25,3)
-        #print(raysStart)
 
         # 入射光のプロットと次に使うためのベクトルを生成
         RayVector = []
@@ -156,7 +152,9 @@ class PlotLens:
             XX = [raysStart[i,0], raysEnd[i,0]]
             YY = [raysStart[i,1], raysEnd[i,1]]
             ZZ = [raysStart[i,2], raysEnd[i,2]]
-            ax.plot(XX, YY, ZZ, 'o-', color='r', ms='2', linewidth=0.5)
+            #ax.plot(XX, YY, ZZ, 'o-', color='r', ms='2', linewidth=0.5)
+            ax.quiver(raysStart[i,0], raysStart[i,1], raysStart[i,2],
+            xRayEnd, 0, 0, linewidth=0.5)
             base.append(raysEnd[i,0]-raysStart[i,0])
             base.append(raysEnd[i,1]-raysStart[i,1])
             base.append(raysEnd[i,2]-raysStart[i,2])
@@ -166,6 +164,7 @@ class PlotLens:
                         raysEnd[i,2]-raysStart[i,2])**2)
             RayVector.append(base)
             base = []
+        #print(RayVector)
 
         # レンズ中の屈折光をプロット
         # 入射光とレンズのなす角を計算
@@ -173,11 +172,14 @@ class PlotLens:
             RayVector, xRayEnd, yRayEnd, zRayEnd)[0]
         rotBaseVector = CL.calcAngle(
             RayVector, xRayEnd, yRayEnd, zRayEnd)[1]
-        #print(RayVector)
-        #print(reflectAngle)
-        #print(*rotBaseVector)
-        #print(np.array(rotBaseVector).shape)
+        surfaceNormalx = CL.calcAngle(
+            RayVector, xRayEnd, yRayEnd, zRayEnd)[2]
+        surfaceNormaly = CL.calcAngle(
+            RayVector, xRayEnd, yRayEnd, zRayEnd)[3]
+        surfaceNormalz = CL.calcAngle(
+            RayVector, xRayEnd, yRayEnd, zRayEnd)[4]
 
+        # 屈折光の始点
         xinLensStart = xRayEnd  # 入射光の終点を引き継ぐ
         yinLensStart = yRayEnd
         zinLensStart = zRayEnd
@@ -191,20 +193,77 @@ class PlotLens:
         zinLensEnd = zinLensEnd.reshape(25)*raysDensity + zplus
 
         for i in range(len(rayinLens)):
-            yinLensEnd[i] = yinLensStart[i] - rayinLens[i][1]
-            zinLensEnd[i] = zinLensStart[i] - rayinLens[i][2]
+            yinLensEnd[i] = rayinLens[i][1]  # 傾きを追加？
+            zinLensEnd[i] = zinLensStart[i] - RayVector[i][2] + rayinLens[i][2]
         xinLensEnd = Rx*np.sqrt(1-(yinLensEnd/Ry)**2-(zinLensEnd/Rz)**2)
+        print(zinLensStart)
 
         raysLensStart = CL.makePoints(
             xinLensStart, yinLensStart, zinLensStart, 25, 3)
         raysLensEnd = CL.makePoints(
             xinLensEnd, yinLensEnd, zinLensEnd, 25, 3)
         # 屈折光のプロット
-        for i in range(len(raysLensStart)):
+        RayVector = []
+        base = []
+        for i in range(len(raysLensStart)):  # 関数にまとめてCalcLineクラスへ
             XX = [raysLensStart[i,0], raysLensEnd[i,0]]
             YY = [raysLensStart[i,1], raysLensEnd[i,1]]
             ZZ = [raysLensStart[i,2], raysLensEnd[i,2]]
-            ax.plot(XX, YY, ZZ, 'o-', color='purple', ms='2', linewidth=0.5)
+            #ax.plot(XX, YY, ZZ, 'o-', color='purple', ms='2', linewidth=0.5)
+            ax.quiver(raysLensStart[i,0], raysLensStart[i,1], raysLensStart[i,2],
+            rayinLens[i][0], rayinLens[i][1], rayinLens[i][2], linewidth=0.5)
+            base.append(raysLensEnd[i,0]-raysLensStart[i,0])
+            base.append(raysLensEnd[i,1]-raysLensStart[i,1])
+            base.append(raysLensEnd[i,2]-raysLensStart[i,2])
+            base = base/(
+                (raysLensEnd[i,0]-raysLensStart[i,0])**2+(
+                    raysLensEnd[i,1]-raysLensStart[i,1])**2+(
+                        raysLensEnd[i,2]-raysLensStart[i,2])**2)
+            RayVector.append(base)
+            base = []
+
+        # ２段階目の屈折光をプロット
+        # １段目屈折光とレンズのなす角を計算
+        reflectAngle = CL.calcAngle(
+            RayVector, xinLensEnd, yinLensEnd, zinLensEnd)[0]
+        rotBaseVector = CL.calcAngle(
+            RayVector, xinLensEnd, yinLensEnd, zinLensEnd)[1]
+        surfaceNormalx = CL.calcAngle(
+            RayVector, xRayEnd, yRayEnd, zRayEnd)[2]
+        surfaceNormaly = CL.calcAngle(
+            RayVector, xRayEnd, yRayEnd, zRayEnd)[3]
+        surfaceNormalz = CL.calcAngle(
+            RayVector, xRayEnd, yRayEnd, zRayEnd)[4]
+
+        # ２段階目屈折光の始点
+        xoutLensStart = xinLensEnd  # １段階目屈折光の終点を引き継ぐ
+        youtLensStart = yinLensEnd
+        zoutLensStart = zinLensEnd
+
+        rayoutLens = CL.geneRayinLens(RayVector, rotBaseVector, reflectAngle)
+
+        youtLensEnd, zoutLensEnd = np.meshgrid(
+            np.arange(-2, 3, 1), np.arange(-2, 3, 1))
+        youtLensEnd = youtLensEnd.reshape(25)*raysDensity  # 要変更
+        zoutLensEnd = zoutLensEnd.reshape(25)*raysDensity + zplus
+
+        for i in range(len(rayoutLens)):
+            youtLensEnd[i] = -surfaceNormaly[i] + youtLensStart[i] - rayoutLens[i][1]
+            zoutLensEnd[i] = -surfaceNormalz[i] + zoutLensStart[i] - rayoutLens[i][2]
+        xoutLensEnd = np.array([4]*25)
+
+        raysStart = CL.makePoints(
+            xoutLensStart, youtLensStart, zoutLensStart, 25, 3)
+        raysEnd = CL.makePoints(
+            xoutLensEnd, youtLensEnd, zoutLensEnd, 25, 3)
+        # 屈折光のプロット
+        RayVector = []
+        base = []
+        for i in range(len(raysLensStart)):  # 関数にまとめてCalcLineクラスへ
+            XX = [raysStart[i,0], raysEnd[i,0]]
+            YY = [raysStart[i,1], raysEnd[i,1]]
+            ZZ = [raysStart[i,2], raysEnd[i,2]]
+            ax.plot(XX, YY, ZZ, 'o-', color='b', ms='2', linewidth=0.5)
 
         # グラフの見た目について
         ax.set_xlim(-LX, LX)
