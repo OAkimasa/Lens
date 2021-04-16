@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.axes3d import Axes3D
@@ -514,13 +515,13 @@ class GenerateRays:
         VF = VectorFunctions()  # インスタンス化
 
         # 始点を生成する
-        pointsX = np.array([centerX]*25) + lens1V[0]
+        pointsX = np.array([centerX]*81) + lens1V[0]
         pointsY, pointsZ = np.meshgrid(
-            np.arange(-2+centerY, 3+centerY, 1),
-            np.arange(-2+centerZ, 3+centerZ, 1))
-        pointsY = pointsY.reshape(25)*rayDensity + lens1V[1]
-        pointsZ = pointsZ.reshape(25)*rayDensity + lens1V[2]
-        raySPoint0 = VF.makePoints(pointsX, pointsY, pointsZ, 25, 3)
+            np.arange(-4+centerY, 5+centerY, 1),
+            np.arange(-4+centerZ, 5+centerZ, 1))
+        pointsY = pointsY.reshape(81)*rayDensity + lens1V[1]
+        pointsZ = pointsZ.reshape(81)*rayDensity + lens1V[2]
+        raySPoint0 = VF.makePoints(pointsX, pointsY, pointsZ, 81, 3)
 
         for i in raySPoint0:
             raySPoint0 = i
