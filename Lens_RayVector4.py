@@ -10,39 +10,39 @@ LY = 4
 LZ = 4
 geneNum = 500
 Nair = 1  # 空気の屈折率
-Nn = 1.5  # レンズの屈折率
-Nn2 = 1.7
+Nn = 1.4  # レンズの屈折率
+Nn2 = 1.8
 centerX = -8  # 入射光の始点の中心座標
 centerY = 0  # 入射光の始点の中心座標
 centerZ = 0  # 入射光の始点の中心座標
 rayDensity = 0.5  # 入射光の密度
-focusX = 10.25  # 焦点付近の描画範囲を平行移動
+focusX = 4.75  # 焦点付近の描画範囲を平行移動
 Rx0 = 0.5  # レンズ０の倍率
 Ry0 = 3  # レンズ０の倍率
 Rz0 = 3  # レンズ０の倍率
 lens0V = np.array([0, 0, 0])  # レンズ０の位置ベクトル
-Rx1 = 0.8  # レンズ１の倍率
+Rx1 = 1  # レンズ１の倍率
 Ry1 = 3  # レンズ１の倍率
 Rz1 = 3  # レンズ１の倍率
-lens1V = np.array([-3, 0, 0])  # レンズ１の位置ベクトル
+lens1V = np.array([-1.8, 0, 0])  # レンズ１の位置ベクトル
 Rx21 = 0.2  # レンズ２の倍率１
-Rx22 = 0.4  # レンズ２の倍率２
+Rx22 = 0.2  # レンズ２の倍率２
 Ry21 = 3  # レンズ２の倍率１
 Ry22 = 2.5  # レンズ２の倍率２
 Rz21 = 3  # レンズ２の倍率１
 Rz22 = 2.5  # レンズ２の倍率２
-lens2V = np.array([-1.8, 0, 0])  # レンズ２の位置ベクトル
-Rx31 = 0.2  # レンズ３の倍率１
-Rx32 = 0.5  # レンズ３の倍率２
+lens2V = np.array([-1.1, 0, 0])  # レンズ２の位置ベクトル
+Rx31 = 0.1  # レンズ３の倍率１
+Rx32 = 0.7  # レンズ３の倍率２
 Ry31 = 2.5  # レンズ３の倍率１
 Ry32 = 3  # レンズ３の倍率２
 Rz31 = 2.5  # レンズ３の倍率１
 Rz32 = 3  # レンズ３の倍率２
-lens3V = np.array([3, 0, 0])  # レンズ３の位置ベクトル
-Rx4 = 0.5  # レンズ４の倍率
+lens3V = np.array([1.5, 0, 0])  # レンズ３の位置ベクトル
+Rx4 = 0.7  # レンズ４の倍率
 Ry4 = 3  # レンズ４の倍率
 Rz4 = 3  # レンズ４の倍率
-lens4V = np.array([3, 0, 0])  # レンズ４の位置ベクトル
+lens4V = np.array([1.5, 0, 0])  # レンズ４の位置ベクトル
 
 class VectorFunctions:
     # 受け取ったx,y,z座標から(x,y,z)の組を作る関数
@@ -164,11 +164,11 @@ class VectorFunctions:
                 directionV[1]**2/Ry22**2)+(
                 directionV[2]**2/Rz22**2)
         #print(A)
-        B = ((startV[0] - 1.6)*directionV[0]/Rx22**2)+(
+        B = ((startV[0] - 0.8)*directionV[0]/Rx22**2)+(
                 startV[1]*directionV[1]/Ry22**2)+(
                 startV[2]*directionV[2]/Rz22**2)
         #print(B)
-        C = -1+((startV[0] - 1.6)**2/Rx22**2)+(
+        C = -1+((startV[0] - 0.8)**2/Rx22**2)+(
                 startV[1]**2/Ry22**2)+(
                 startV[2]**2/Rz22**2)
         #print(C)
@@ -186,7 +186,7 @@ class VectorFunctions:
 
     def decideNormalV_Lens2R(self, pointV):
         pointV = pointV - lens2V
-        nornalVx = -(2/Rx22**2)*(pointV[0] - 1.6)
+        nornalVx = -(2/Rx22**2)*(pointV[0] - 0.8)
         nornalVy = -(2/Ry22**2)*pointV[1]
         nornalVz = -(2/Rz22**2)*pointV[2]
         normalV = np.array([nornalVx, nornalVy, nornalVz])
@@ -200,11 +200,11 @@ class VectorFunctions:
                 directionV[1]**2/Ry31**2)+(
                 directionV[2]**2/Rz31**2)
         #print(A)
-        B = ((startV[0] + 1.6)*directionV[0]/Rx31**2)+(
+        B = ((startV[0] + 1.1)*directionV[0]/Rx31**2)+(
                 startV[1]*directionV[1]/Ry31**2)+(
                 startV[2]*directionV[2]/Rz31**2)
         #print(B)
-        C = -1+((startV[0] + 1.6)**2/Rx31**2)+(
+        C = -1+((startV[0] + 1.1)**2/Rx31**2)+(
                 startV[1]**2/Ry31**2)+(
                 startV[2]**2/Rz31**2)
         #print(C)
@@ -472,7 +472,7 @@ class GenerateRays:
             Ys = Ry21 * np.outer(np.sin(theta), np.sin(phi))
             Zs = Rz21 * np.outer(np.ones(np.size(theta)), np.cos(phi))
             Xs1 = Rx21 * np.outer(np.cos(theta), np.sin(phi))
-            Xs2 = Rx22 * np.outer(np.cos(theta), np.sin(phi)) + 1.6
+            Xs2 = Rx22 * np.outer(np.cos(theta), np.sin(phi)) + 0.8
             Ys1 = Ry21 * np.outer(np.sin(theta), np.sin(phi))
             Ys2 = Ry22 * np.outer(np.sin(theta), np.sin(phi))
             Zs1 = Rz21 * np.outer(np.ones(np.size(theta)), np.cos(phi))
@@ -491,14 +491,14 @@ class GenerateRays:
             Ys = Ry31 * np.outer(np.sin(theta), np.sin(phi))
             Zs = Rz31 * np.outer(np.ones(np.size(theta)), np.cos(phi))
             Xs1 = Rx31 * np.outer(np.cos(theta), np.sin(phi))
-            Xs2 = Rx32 * np.outer(np.cos(theta), np.sin(phi)) + 1.6
+            Xs2 = Rx32 * np.outer(np.cos(theta), np.sin(phi)) + 1.1
             Ys1 = Ry31 * np.outer(np.sin(theta), np.sin(phi))
             Ys2 = Ry32 * np.outer(np.sin(theta), np.sin(phi))
             Zs1 = Rz31 * np.outer(np.ones(np.size(theta)), np.cos(phi))
             Zs2 = Rz32 * np.outer(np.ones(np.size(theta)), np.cos(phi))
             Ys = np.where(Xs<0, Ys2, Ys1) + lens3V[1]
             Zs = np.where(Xs<0, Zs2, Zs1) + lens3V[2]
-            Xs = np.where(Xs<0, Xs2, Xs1) + lens3V[0] - 1.6
+            Xs = np.where(Xs<0, Xs2, Xs1) + lens3V[0] - 1.1
             ax.plot_wireframe(Xs, Ys, Zs, linewidth=0.2)
 
             # ４枚目のレンズを再現する
@@ -713,7 +713,7 @@ class ChromaticAberration:
         ax.set_zlabel('z')
         plt.title('Near the Lens')
 
-    # トリプレット（テッサー）と光線の描画
+    # トリプレット（テッサー）と光線の描画。４枚目を低分散高屈折率の凸レンズにしている。
     def colorTriplet(self):
         def plotLensTriplet():
             # １枚目の凸レンズを再現する
@@ -736,7 +736,7 @@ class ChromaticAberration:
             Ys = Ry21 * np.outer(np.sin(theta), np.sin(phi))
             Zs = Rz21 * np.outer(np.ones(np.size(theta)), np.cos(phi))
             Xs1 = Rx21 * np.outer(np.cos(theta), np.sin(phi))
-            Xs2 = Rx22 * np.outer(np.cos(theta), np.sin(phi)) + 1.6
+            Xs2 = Rx22 * np.outer(np.cos(theta), np.sin(phi)) + 0.8
             Ys1 = Ry21 * np.outer(np.sin(theta), np.sin(phi))
             Ys2 = Ry22 * np.outer(np.sin(theta), np.sin(phi))
             Zs1 = Rz21 * np.outer(np.ones(np.size(theta)), np.cos(phi))
@@ -755,14 +755,14 @@ class ChromaticAberration:
             Ys = Ry31 * np.outer(np.sin(theta), np.sin(phi))
             Zs = Rz31 * np.outer(np.ones(np.size(theta)), np.cos(phi))
             Xs1 = Rx31 * np.outer(np.cos(theta), np.sin(phi))
-            Xs2 = Rx32 * np.outer(np.cos(theta), np.sin(phi)) + 1.6
+            Xs2 = Rx32 * np.outer(np.cos(theta), np.sin(phi)) + 1.1
             Ys1 = Ry31 * np.outer(np.sin(theta), np.sin(phi))
             Ys2 = Ry32 * np.outer(np.sin(theta), np.sin(phi))
             Zs1 = Rz31 * np.outer(np.ones(np.size(theta)), np.cos(phi))
             Zs2 = Rz32 * np.outer(np.ones(np.size(theta)), np.cos(phi))
             Ys = np.where(Xs<0, Ys2, Ys1) + lens3V[1]
             Zs = np.where(Xs<0, Zs2, Zs1) + lens3V[2]
-            Xs = np.where(Xs<0, Xs2, Xs1) + lens3V[0] - 1.6
+            Xs = np.where(Xs<0, Xs2, Xs1) + lens3V[0] - 1.1
             ax.plot_wireframe(Xs, Ys, Zs, linewidth=0.2)
 
             # ４枚目のレンズを再現する
@@ -795,8 +795,8 @@ class ChromaticAberration:
             VF.plotLinePurple(raySPoint0, rayEPoint0)  # 入射光描画
 
             # 赤色光
-            Nn = 1.5
-            Nn2 = 1.7
+            Nn = 1.4
+            Nn2 = 1.8
             refractSPoint0 = rayEPoint0  # 入射光の終点を引き継ぐ。以下レンズ１についての計算
             normalV_Lens1L = VF.decideNormalV_Lens1L(refractSPoint0)  # レンズの法線を求める
             #ax.quiver(rayEPoint0[0],rayEPoint0[1],rayEPoint0[2],normalV_Lens1L[0],normalV_Lens1L[1],normalV_Lens1L[2],linewidth=0.5)
@@ -875,7 +875,7 @@ class ChromaticAberration:
 
             # 青色光
             Nn = Nn*1.04
-            Nn2 = Nn2*1.04
+            Nn2 = Nn2*1.01
             refractSPoint0 = rayEPoint0  # 入射光の終点を引き継ぐ。以下レンズ１についての計算
             normalV_Lens1L = VF.decideNormalV_Lens1L(refractSPoint0)  # レンズの法線を求める
             #ax.quiver(rayEPoint0[0],rayEPoint0[1],rayEPoint0[2],normalV_Lens1L[0],normalV_Lens1L[1],normalV_Lens1L[2],linewidth=0.5)
@@ -919,7 +919,7 @@ class ChromaticAberration:
             normalV_Lens3L = VF.decideNormalV_Lens3L(refractSPoint_Lens3L)  # レンズの法線を求める
             #ax.quiver(refractSPoint_Lens3L[0],refractSPoint_Lens3L[1],refractSPoint_Lens3L[2],normalV_Lens3L[0],normalV_Lens3L[1],normalV_Lens3L[2],linewidth=0.5)
             # 屈折光の方向ベクトルを求める
-            refractionV_Lens3L = VF.decideRefractionVL(refractionV_Lens2R, normalV_Lens3L, Nair, Nn)
+            refractionV_Lens3L = VF.decideRefractionVL(refractionV_Lens2R, normalV_Lens3L, Nair, Nn*0.88)
             #ax.quiver(refractSPoint_Lens3L[0],refractSPoint_Lens3L[1],refractSPoint_Lens3L[2],refractionV_Lens3L[0],refractionV_Lens3L[1],refractionV_Lens3L[2],linewidth=0.5)
             # 係数Tを求めて、屈折光の終点も求める
             T = VF.rayTraceDecideT_Lens3R(refractSPoint_Lens3L, refractionV_Lens3L)
@@ -928,7 +928,7 @@ class ChromaticAberration:
             raySPoint_Lens3R = refractEPoint_Lens3L
             normalV_Lens3R = VF.decideNormalV_Lens3R(raySPoint_Lens3R)
             #ax.quiver(raySPoint_Lens3R[0],raySPoint_Lens3R[1],raySPoint_Lens3R[2],normalV_Lens3R[0],normalV_Lens3R[1],normalV_Lens3R[2],linewidth=0.5)
-            refractionV_Lens3R = VF.decideRefractionVR(refractionV_Lens3L, normalV_Lens3R, Nn, Nn2)
+            refractionV_Lens3R = VF.decideRefractionVR(refractionV_Lens3L, normalV_Lens3R, Nn*0.88, Nn2)
             #ax.quiver(raySPoint_Lens3R[0],raySPoint_Lens3R[1],raySPoint_Lens3R[2],refractionV_Lens3R[0],refractionV_Lens3R[1],refractionV_Lens3R[2],linewidth=0.5)
             T = 0  # レンズ３とレンズ４の接着を考えた
             rayEPoint_Lens4L = raySPoint_Lens3R + T*refractionV_Lens3R
@@ -965,9 +965,9 @@ class ChromaticAberration:
     def focusFocus(self, func):
         func()
         # グラフの見た目について
-        ax.set_xlim(-LX+lens0V[0]+focusX, LX+lens0V[0]+focusX)
-        ax.set_ylim(-LY+lens0V[1], LY+lens0V[1])
-        ax.set_zlim(-LZ+lens0V[2], LZ+lens0V[2])
+        ax.set_xlim(-LX/3+lens0V[0]+focusX, LX/3+lens0V[0]+focusX)
+        ax.set_ylim(-LY/3+lens0V[1], LY/3+lens0V[1])
+        ax.set_zlim(-LZ/3+lens0V[2], LZ/3+lens0V[2])
         ax.set_xlabel('x')
         ax.set_ylabel('y')
         ax.set_zlabel('z')
